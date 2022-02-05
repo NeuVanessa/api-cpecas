@@ -1,0 +1,64 @@
+import { Request, Response } from "express";
+import { CompanyModal } from "../models/Company";
+
+export class ManufacturerController {
+  async create(request: Request, response: Response) {
+    try {
+      const { name, description, cnpj, founded, founder } = request.body;
+
+      if (!name || !description) {
+        return response
+          .status(400)
+          .json({ msg: "Todos os Campos são obrigatórios" });
+      }
+
+      const companyModal = await CompanyModal.create({
+        name,
+        description,
+        cnpj,
+        founded,
+        founder,
+      });
+      const savedManufactureModal = await companyModal.save();
+      response.json(savedManufactureModal);
+    } catch (error) {
+      response.status(500).json({ err: "Produto não pode ser criado" + error });
+    }
+  }
+
+  async findAll(request: Request, response: Response) {
+    const companyModal = await CompanyModal.find();
+    return response.json(companyModal);
+  }
+
+  async findById(request: Request, response: Response) {
+    const { id } = request.params;
+    const companyModal = await CompanyModal.findById(id);
+    return response.json(companyModal);
+  }
+
+  async update(request: Request, response: Response) {
+    const { id } = request.params;
+    const { name, description, cnpj, founded, founder } = request.body;
+
+    const user = await CompanyModal.findByIdAndUpdate(
+      id,
+      {
+        name,
+        description,
+        cnpj,
+        founded,
+        founder,
+      },
+      { new: true }
+    );
+
+    return response.json(user);
+  }
+
+  async delete(request: Request, response: Response) {
+    const { id } = request.params;
+    await CompanyModal.findByIdAndRemove(id);
+    return response.sendStatus(204);
+  }
+}
